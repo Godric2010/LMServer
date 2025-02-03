@@ -1,0 +1,39 @@
+#Rider project files
+.idea/
+*.sln.iml
+
+#Build and release artifacts
+bin/
+obj/
+out/
+publish/
+
+#User specific files
+.vscode/
+*.user
+*.suo
+*.userosschache
+*.sln.dotSettings*
+*.psess
+
+# Rider and VS logs
+logs/
+*.log
+*.tlog
+
+# Environmental variables
+.env
+.env.*
+
+# Package manager
+.nuget/
+node_modules/
+packages/
+project.lock.json
+
+# ASP.NET hosting
+wwwroot/
+appsettings.Development.json
+
+#Auto generated rider settings
+LMServer.http
