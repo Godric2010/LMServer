@@ -1,7 +1,10 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+using LMServer.Models;
+using LMServer.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddSingleton<FileUploadService>();
+
 var app = builder.Build();
 
 var uploadDirectory = Path.Combine(Directory.GetCurrentDirectory(), "uploads");
@@ -11,33 +14,14 @@ Directory.CreateDirectory(uploadDirectory);
 app.MapGet("/", () => "LMServer up and running");
 
 // Placeholder for file upload
-app.MapPost("/upload", async (HttpContext context) =>
+app.MapPost("/upload", async (HttpContext context, FileUploadService uploadService) =>
 {
     var form = await context.Request.ReadFormAsync();
     var file = form.Files.FirstOrDefault();
 
-    if (file == null || file.Length == 0)
-    {
-        return Results.BadRequest("No file uploaded or file is empty");
-    }
-
-    var allowedExtensions = new[] { ".blend" };
-    var fileExtension = Path.GetExtension(file.FileName).ToLower();
-
-    if (!allowedExtensions.Contains(fileExtension))
-    {
-        return Results.BadRequest($"File extension {fileExtension} is not supported.");
-    }
-
-    if (file.Length > 50 * 1024 * 1024)
-    {
-        return Results.BadRequest($"File to big. (Max. 50MB)");
-    }
+    var (success, msg, filePath) = await uploadService.SaveFileAsync(file);
+    return success ? Results.Ok(new UploadResult(true, msg, filePath)) : Results.BadRequest(new UploadResult(false, msg));
     
-    var filePath = Path.Combine(uploadDirectory, file.FileName);
-    await using var filestream = new FileStream(filePath, FileMode.Create);
-    await file.CopyToAsync(filestream);
-    return Results.Ok($"File uploaded: {filePath}");
 });
 
 // Placeholder for status updates
@@ -47,7 +31,7 @@ app.MapGet("/status", () =>
 });
 
 // Placeholder for file download
-app.MapGet("/downlaod", () =>
+app.MapGet("/download", () =>
 {
     return Results.Ok("File downloaded. (Not implemented yet!)");
 });
